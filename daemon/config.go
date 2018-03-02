@@ -18,11 +18,15 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/cilium/cilium/api/v1/models"
 	"github.com/cilium/cilium/daemon/options"
 	"github.com/cilium/cilium/pkg/lock"
+	"github.com/cilium/cilium/pkg/node"
 	"github.com/cilium/cilium/pkg/option"
+
+	"github.com/spf13/viper"
 )
 
 const (
@@ -44,6 +48,14 @@ const (
 
 	// ModePreFilterGeneric for loading progs with xdpgeneric
 	ModePreFilterGeneric = "generic"
+)
+
+// CLI flags
+const (
+	autoIPv6NodeRoutes    = "auto-ipv6-node-routes" // obsoleted (GH-4082)
+	autoRouting           = "auto-routing"
+	announceAutoRouting   = "announce-auto-routing"
+	k8sUseNodeAnnotations = "k8s-use-node-annotations"
 )
 
 // Config is the configuration used by Daemon.
@@ -93,6 +105,38 @@ type Config struct {
 
 	// AgentLabels contains additional labels to identify this agent in monitor events.
 	AgentLabels []string
+
+	routingConfig *node.RoutingConfiguration
+}
+
+func (c *Config) deriveNodeRoutingConfiguration() *node.RoutingConfiguration {
+	routingConfiguration := node.RoutingConfiguration{}
+	switch strings.ToLower(c.Tunnel) {
+	case "vxlan":
+		routingConfiguration.Encapsulation = node.EncapsulationVXLAN
+	case "geneve":
+		routingConfiguration.Encapsulation = node.EncapsulationGeneve
+	case "disabled", "false":
+		routingConfiguration.Encapsulation = node.EncapsulationDisabled
+	default:
+		log.Fatalf("Unknown encapsulation type '%s'. Supported values are vxlan, geneve, and disabled", c.Tunnel)
+	}
+
+	if viper.GetBool(autoRouting) {
+		routingConfiguration.DirectRouting.InstallRoutes = true
+	}
+
+	if viper.GetBool(announceAutoRouting) {
+		routingConfiguration.DirectRouting.Announce = true
+	}
+
+	return &routingConfiguration
+}
+
+// initialize is called early on in bootstrapping and initializes and validates
+// the configuration
+func (c *Config) initialize() {
+	c.routingConfig = c.deriveNodeRoutingConfiguration()
 }
 
 func NewConfig() *Config {
