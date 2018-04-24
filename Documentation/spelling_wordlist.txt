@@ -144,6 +144,7 @@ grep
 gRPC
 gsg
 Gunawardena
+gz
 hadn
 hairpinned
 hardcode
@@ -182,10 +183,12 @@ iproute
 iptables
 IPv
 isn
+istio
 Istio
 ixgbe
 ixgbevf
 Jakub
+Jenkinsfiles
 jeq
 Jenkinsfiles
 Jesper
@@ -290,6 +293,7 @@ onwards
 oolchain
 opcodes
 orchestrator
+osx
 pc
 pem
 Pepelnjak
@@ -341,6 +345,7 @@ sandboxing
 scalability
 scalable
 seccomp
+sed
 selftest
 selftests
 Sep
@@ -447,6 +452,7 @@ xml
 xor
 xoring
 xwing
+xz
 Yan
 Yunsong
 Zannoni
