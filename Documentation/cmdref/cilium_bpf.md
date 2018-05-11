@@ -20,6 +20,7 @@ Direct access to local BPF maps
 ### SEE ALSO
 * [cilium](cilium.html)	 - CLI
 * [cilium bpf ct](cilium_bpf_ct.html)	 - Connection tracking tables
+* [cilium bpf dropmetrics](cilium_bpf_dropmetrics.html)	 - List drop metrics for various endpoints
 * [cilium bpf endpoint](cilium_bpf_endpoint.html)	 - Local endpoint map
 * [cilium bpf ipcache](cilium_bpf_ipcache.html)	 - List endpoint IPs (local and remote) and their corresponding security identities
 * [cilium bpf lb](cilium_bpf_lb.html)	 - Load-balancing configuration
