@@ -24,6 +24,8 @@ import (
 	"github.com/cilium/cilium/pkg/bpf"
 	"github.com/cilium/cilium/pkg/byteorder"
 	"github.com/cilium/cilium/pkg/logging"
+	DropMetricsMap "github.com/cilium/cilium/pkg/maps/dropmetrics"
+	//DropMetricsMap "github.com/cilium/cilium/pkg/maps/dropmetrics"
 )
 
 var log = logging.DefaultLogger
@@ -312,6 +314,104 @@ func doGC4(m *bpf.Map, filter *GCFilter) int {
 		// Map is empty, nothing to clean up.
 		return 0
 	}
+
+	//TODO Remove this DropMetricsMapPathLocked CallsMapPathLocked
+	path := bpf.MapPath(DropMetricsMap.MapName)
+	//mapDrop, err := bpf.OpenMap(path)
+	mapDrop, err := bpf.OpenMap(
+		path)
+
+	if err != nil {
+		log.Debug("MK in doGC OpenMap error :", err)
+	} else { // OPEN SUCCESS
+		var entry DropMetricsMap.DropValue
+		key := DropMetricsMap.NewKey(uint64(5))
+
+		log.Debug("MK in doGC OpenMap SUCCESS! isNew:", mapDrop)
+		err = bpf.LookupElement(
+			mapDrop.GetFd(),
+			unsafe.Pointer(&key),
+			unsafe.Pointer(&entry),
+		)
+
+		if err != nil {
+			log.Debug("MK in doGC LookupElement failed with error", err)
+		} else {
+			log.Debug("MK in doGC LookupElement SUCCESS! entry:", entry)
+		}
+	}
+
+	/*
+			bpf.OpenOrCreateMap(
+		        path,
+		        bpf.BPF_MAP_TYPE_HASH,
+		        uint64(unsafe.Sizeof(DropKeyMap.DropKey{})),
+		        uint64(unsafe.Sizeof(DropKeyMap.DropValue{})),
+		        DropKeyMap.MaxEntries,
+		        0,
+		    )
+	*/
+
+	/*key := DropMetricsMap.NewKey(uint64(5))
+		//entry := DropKeyMap.NewValue(uint64(0))
+		var entry DropMetricsMap.DropValue
+
+		log.Debug("MK in doGC OpenOrCreateMap SUCCESS :  key: ", key)
+		log.Debug("MK in doGC OpenOrCreateMap SUCCESS :  entry: ", entry)
+		err = bpf.LookupElement(
+			fd,
+			unsafe.Pointer(&key),
+			unsafe.Pointer(&entry),
+		)
+
+		if err != nil {
+			log.Debug("MK in doGC Lookup error :", err)
+		} else { //LOOKUP SUCCESS
+			log.Debug("MK in doGC Lookup SUCCESS :", entry)
+		}
+	}*/
+	//bpf.ObjClose(fd)
+
+	/*path := bpf.MapPath(DropMetricsMap.MapName)
+	fd, isNew, err := bpf.DropMetricsMap(
+		path,
+		bpf.BPF_MAP_TYPE_HASH,
+		uint32(unsafe.Sizeof(DropMetricsMap.DropKey{})),
+		uint32(unsafe.Sizeof(DropMetricsMap.DropValue{})),
+		DropKeyMap.MaxEntries,
+		0,
+	)
+
+	if err != nil {
+		log.Debug("MK in doGC OpenOrCreateMap error :", err)
+	} else { //
+		log.Debug("MK in doGC OpenOrCreateMap SUCCESS! isNew:", isNew)
+		var key, nextKey DropKeyMap.DropKey
+		var entry DropKeyMap.DropValue
+		err := bpf.GetNextKey(
+			fd,
+			unsafe.Pointer(&key),
+			unsafe.Pointer(&nextKey),
+		)
+
+		if err != nil {
+			log.Debug("MK in doGC GetNextKey failed with error", err)
+		} else {
+			log.Debug("MK in doGC GetNextKey SUCCESS nextKey:", nextKey)
+			err = bpf.LookupElement(
+				fd,
+				unsafe.Pointer(&nextKey),
+				unsafe.Pointer(&entry),
+			)
+
+			if err != nil {
+				log.Debug("MK in doGC LookupElement failed with error", err)
+			} else {
+				log.Debug("MK in doGC LookupElement SUCCESS! entry:", entry)
+			}
+		}
+	}*/
+	//TODO Remove this
 
 	var count uint32
 	for count = 1; count <= m.MapInfo.MaxEntries; count++ {

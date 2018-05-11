@@ -333,6 +333,12 @@ static inline int handle_ipv4(struct __sk_buff *skb, __u32 proxy_identity)
 	struct iphdr *ip4;
 	int l4_off;
 	__u32 secctx;
+	struct drop_key key = {
+            .drop_key = 5,
+        	};
+    struct drop_value value= {
+           .drop_value = 10,
+           };
 
 	if (!revalidate_data(skb, &data, &data_end, &ip4))
 		return DROP_INVALID;
@@ -340,6 +346,12 @@ static inline int handle_ipv4(struct __sk_buff *skb, __u32 proxy_identity)
 	l4_off = ETH_HLEN + ipv4_hdrlen(ip4);
 	secctx = derive_ipv4_sec_ctx(skb, ip4);
 	tuple.nexthdr = ip4->protocol;
+
+	////TODO
+
+    map_update_elem(&cilium_dropmetrics, &key, &value, 0);
+
+	////
 
 #ifdef FROM_HOST
 	if (1) {

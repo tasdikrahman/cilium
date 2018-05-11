@@ -64,6 +64,7 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 
+	"github.com/cilium/cilium/pkg/maps/dropmetrics"
 	"github.com/sirupsen/logrus"
 )
 
@@ -1493,6 +1494,11 @@ func Ct4MapPath(id int) string {
 
 func (e *Endpoint) Ct4MapPathLocked() string {
 	return Ct4MapPath(int(e.ID))
+}
+
+// DropMetricsMapPathLocked returns the path to global dropmetrics  map.
+func DropMetricsMapPathLocked() string {
+	return bpf.MapPath(dropmetrics.MapName)
 }
 
 func (e *Endpoint) LogStatus(typ StatusType, code StatusCode, msg string) {

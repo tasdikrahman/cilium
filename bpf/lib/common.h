@@ -188,6 +188,14 @@ struct policy_entry {
 	__u64		bytes;
 };
 
+struct drop_key {
+	__u64		drop_key;
+};
+
+struct drop_value {
+	__u64		drop_value;
+};
+
 enum {
 	CILIUM_NOTIFY_UNSPEC,
 	CILIUM_NOTIFY_DROP,
