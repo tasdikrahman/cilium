@@ -734,6 +734,20 @@ func (e *Endpoint) regenerateBPF(owner Owner, epdir, reason string) (uint64, err
 		return 0, err
 	}
 
+	// To avoid traffic loss, wait for the proxy to be ready to accept traffic
+	// on new redirect ports, before we generate the policy that will redirect
+	// traffic to those ports.
+	//
+	// In addition, in case the proxy is run in a sidecar container, make sure
+	// that the proxy has been configured before we modify the BPF policy maps,
+	// which may drop the control traffic required for the proxy to get
+	// configured.
+	err = e.WaitForProxyCompletions()
+	if err != nil {
+		e.Mutex.Unlock()
+		return 0, fmt.Errorf("Error while configuring proxy redirects: %s", err)
+	}
+
 	// Populate maps used for CIDR-based policy. If the maps would be empty,
 	// just delete the maps.
 	if e.L3Policy != nil {
@@ -761,14 +775,6 @@ func (e *Endpoint) regenerateBPF(owner Owner, epdir, reason string) (uint64, err
 	libdir := owner.GetBpfDir()
 	rundir := owner.GetStateDir()
 	debug := strconv.FormatBool(owner.DebugEnabled())
-
-	// To avoid traffic loss, wait for the proxy to be ready to accept traffic
-	// on new redirect ports, before we generate the policy that will redirect
-	// traffic to those ports.
-	err = e.WaitForProxyCompletions()
-	if err != nil {
-		return 0, fmt.Errorf("Error while configuring proxy redirects: %s", err)
-	}
 
 	if bpfHeaderfileChanged {
 		// Compile and install BPF programs for this endpoint
